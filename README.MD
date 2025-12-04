@@ -204,7 +204,7 @@ Sort books by price:
 http://localhost:8000/api/books?sort=price
 ```
 
-Combine multiple filters (e.g., search for "new" and only show books under £15, sorted by price):
+Combine multiple filters (e.g., search for "the" and only show books under £15, sorted by price):
 
 ```
 http://localhost:8000/api/books?search=the&maxprice=15&sort=price
