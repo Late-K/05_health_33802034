@@ -1,9 +1,10 @@
-<body>
-  <h1>Users</h1>
+<div class="intro">
   <h2>Here are our users:</h2>
+</div>
+<div class="form-card">
   <ul>
     <% for(let i = 0; i < availableUsers.length; i++) { %>
     <li><%= availableUsers[i].username %>, <%= availableUsers[i].email %></li>
     <% } %>
   </ul>
-</body>
+</div>
