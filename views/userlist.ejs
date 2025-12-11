@@ -2,7 +2,6 @@
   <h1>Users</h1>
   <h2>Here are our users:</h2>
   <ul>
-    <!-- goes through availableUsers array and lists each username and email -->
     <% for(let i = 0; i < availableUsers.length; i++) { %>
     <li><%= availableUsers[i].username %>, <%= availableUsers[i].email %></li>
     <% } %>

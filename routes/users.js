@@ -12,8 +12,8 @@ const registerValidation = checkSchema({
   email: {
     isEmail: { errorMessage: "Invalid email" },
     isLength: {
-      options: { max: 225 },
-      errorMessage: "Email max length 225",
+      options: { max: 255 },
+      errorMessage: "Email max length 255",
     },
     trim: true,
     normalizeEmail: true,
@@ -49,8 +49,8 @@ const registerValidation = checkSchema({
   password: {
     notEmpty: { errorMessage: "Password is required" },
     isLength: {
-      options: { min: 8, max: 225 },
-      errorMessage: "Password must be 8–225 characters",
+      options: { min: 8, max: 255 },
+      errorMessage: "Password must be 8-255 characters",
     },
     matches: {
       options: /\d/,
@@ -77,7 +77,6 @@ router.post("/registered", registerValidation, function (req, res, next) {
   if (!errors.isEmpty()) {
     return res.render("register.ejs", { errors: errors.array() });
   } else {
-    // Check if username already exists
     dbQueries.getUserByUsername(
       req.body.username,
       async (err, existingUser) => {
@@ -88,9 +87,7 @@ router.post("/registered", registerValidation, function (req, res, next) {
             errors: [{ msg: "Username already exists" }],
           });
         }
-
         const passwordHash = await bcrypt.hash(req.body.password, saltRounds);
-
         dbQueries.insertUser(
           req.body.username,
           req.body.first,
@@ -99,8 +96,7 @@ router.post("/registered", registerValidation, function (req, res, next) {
           passwordHash,
           (err, newId) => {
             if (err) return next(err);
-
-            res.render("regSuccess.ejs");
+            res.render("regSuccess.ejs", { errors: [] });
           }
         );
       }
@@ -117,7 +113,7 @@ router.get("/list", redirectLogin, function (req, res, next) {
 });
 
 router.get("/login", function (req, res, next) {
-  res.render("login.ejs", { error: null });
+  res.render("login.ejs", { errors: [] });
 });
 
 router.post("/loggedin", function (req, res, next) {
@@ -128,7 +124,9 @@ router.post("/loggedin", function (req, res, next) {
 
     if (!user) {
       dbQueries.insertAuditLog(req.body.username, "unknown username", next);
-      return res.render("login.ejs", { error: "Invalid username or password" });
+      return res.render("login.ejs", {
+        errors: [{ msg: "Invalid email or password" }],
+      });
     }
 
     bcrypt.compare(
@@ -144,7 +142,7 @@ router.post("/loggedin", function (req, res, next) {
             next
           );
           return res.render("login.ejs", {
-            error: "Invalid username or password",
+            errors: [{ msg: "Invalid email or password" }],
           });
         } else {
           dbQueries.insertAuditLog(req.body.username, "logged in", next);

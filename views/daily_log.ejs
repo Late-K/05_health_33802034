@@ -24,7 +24,10 @@
         <td><%= item.quantity %></td>
         <td><%= item.total_calories %></td>
         <td>
-          <form action="./<%= date %>/delete/<%= item.log_id %>" method="POST">
+          <form
+            action="/foods/logs/<%= date %>/delete/<%= item.log_id %>"
+            method="POST"
+          >
             <button
               type="submit"
               class="delete-btn"

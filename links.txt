@@ -1,1 +1,12 @@
 home=https://www.doc.gold.ac.uk/usr/148/
+about=https://www.doc.gold.ac.uk/usr/148/about
+foodapi=https://www.doc.gold.ac.uk/usr/148/foodslist
+addfood=https://www.doc.gold.ac.uk/usr/148/foods/addfood
+foodlog=https://www.doc.gold.ac.uk/usr/148/foods/logs
+foodday=https://www.doc.gold.ac.uk/usr/148/foods/logs/:2025-12-12
+yourfood=https://www.doc.gold.ac.uk/usr/148/foods/search
+register=https://www.doc.gold.ac.uk/usr/148/users/register
+login=https://www.doc.gold.ac.uk/usr/148/users/login
+logout=https://www.doc.gold.ac.uk/usr/148/logout
+userlist=https://www.doc.gold.ac.uk/usr/148/users/list
+audit=https://www.doc.gold.ac.uk/usr/148/users/audit

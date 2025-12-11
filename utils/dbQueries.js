@@ -1,6 +1,6 @@
 // foods queries //
 
-exports.getFoodByName = function (userId, name, calories, next) {
+function getFoodByName(userId, name, calories, next) {
   db.query(
     `SELECT * FROM foods 
      WHERE user_id = ? 
@@ -13,9 +13,9 @@ exports.getFoodByName = function (userId, name, calories, next) {
       next(null, rows[0] || null);
     }
   );
-};
+}
 
-exports.insertFood = function (userId, name, calories, next) {
+function insertFood(userId, name, calories, next) {
   db.query(
     "INSERT INTO foods (user_id, name, calories) VALUES (?, ?, ?)",
     [userId, name, calories],
@@ -24,9 +24,9 @@ exports.insertFood = function (userId, name, calories, next) {
       next(null, result.insertId);
     }
   );
-};
+}
 
-exports.searchFoods = function (userId, text, next) {
+function searchFoods(userId, text, next) {
   const term = "%" + text + "%";
   db.query(
     `SELECT *
@@ -39,9 +39,9 @@ exports.searchFoods = function (userId, text, next) {
       next(null, rows);
     }
   );
-};
+}
 
-exports.getAllFoodsForUser = function (userId, next) {
+function getAllFoodsForUser(userId, next) {
   db.query(
     `SELECT *
      FROM foods
@@ -53,9 +53,9 @@ exports.getAllFoodsForUser = function (userId, next) {
       next(null, rows);
     }
   );
-};
+}
 
-exports.deleteFood = function (userId, foodId, next) {
+function deleteFood(userId, foodId, next) {
   db.query(
     "DELETE FROM foods WHERE id = ? AND user_id = ?",
     [foodId, userId],
@@ -64,11 +64,11 @@ exports.deleteFood = function (userId, foodId, next) {
       next(null);
     }
   );
-};
+}
 
 // food_log queries //
 
-exports.getTodaysLogEntry = function (userId, foodId, next) {
+function getTodaysLogEntry(userId, foodId, next) {
   db.query(
     `SELECT id, quantity 
      FROM food_log 
@@ -79,9 +79,9 @@ exports.getTodaysLogEntry = function (userId, foodId, next) {
       next(null, rows[0] || null);
     }
   );
-};
+}
 
-exports.updateQuantity = function (logId, qty, next) {
+function updateQuantity(logId, qty, next) {
   db.query(
     "UPDATE food_log SET quantity = quantity + ? WHERE id = ?",
     [qty, logId],
@@ -90,9 +90,9 @@ exports.updateQuantity = function (logId, qty, next) {
       next(null);
     }
   );
-};
+}
 
-exports.insertLog = function (userId, foodId, qty, next) {
+function insertLog(userId, foodId, qty, next) {
   db.query(
     `INSERT INTO food_log (user_id, food_id, quantity, date_eaten)
      VALUES (?, ?, ?, CURDATE())`,
@@ -102,9 +102,9 @@ exports.insertLog = function (userId, foodId, qty, next) {
       next(null);
     }
   );
-};
+}
 
-exports.getDailySummaries = function (userId, next) {
+function getDailySummaries(userId, next) {
   db.query(
     `
     SELECT 
@@ -123,9 +123,9 @@ exports.getDailySummaries = function (userId, next) {
       next(null, rows);
     }
   );
-};
+}
 
-exports.getDailyLog = function (userId, date, next) {
+function getDailyLog(userId, date, next) {
   db.query(
     `
     SELECT 
@@ -147,9 +147,9 @@ exports.getDailyLog = function (userId, date, next) {
       next(null, rows);
     }
   );
-};
+}
 
-exports.deleteLogEntry = function (logId, userId, next) {
+function deleteLogEntry(logId, userId, next) {
   db.query(
     "DELETE FROM food_log WHERE id = ? AND user_id = ?",
     [logId, userId],
@@ -158,11 +158,11 @@ exports.deleteLogEntry = function (logId, userId, next) {
       next(null);
     }
   );
-};
+}
 
 // user queries //
 
-exports.getUserByUsername = function (username, next) {
+function getUserByUsername(username, next) {
   db.query(
     "SELECT * FROM users WHERE username = ?",
     [username],
@@ -171,16 +171,9 @@ exports.getUserByUsername = function (username, next) {
       next(null, rows[0] || null);
     }
   );
-};
+}
 
-exports.insertUser = function (
-  username,
-  first,
-  last,
-  email,
-  passwordHash,
-  next
-) {
+function insertUser(username, first, last, email, passwordHash, next) {
   db.query(
     `INSERT INTO users (username, first_name, last_name, email, password_hash)
      VALUES (?, ?, ?, ?, ?)`,
@@ -190,9 +183,9 @@ exports.insertUser = function (
       next(null, result.insertId);
     }
   );
-};
+}
 
-exports.getAllUsers = function (next) {
+function getAllUsers(next) {
   db.query(
     "SELECT id, username, first_name, last_name, email FROM users",
     function (err, rows) {
@@ -200,11 +193,11 @@ exports.getAllUsers = function (next) {
       next(null, rows);
     }
   );
-};
+}
 
 // audit queries //
 
-exports.insertAuditLog = function (username, status, next) {
+function insertAuditLog(username, status, next) {
   db.query(
     "INSERT INTO auditlog (username, status) VALUES (?, ?)",
     [username, status],
@@ -213,11 +206,30 @@ exports.insertAuditLog = function (username, status, next) {
       next(null);
     }
   );
-};
+}
 
-exports.getAuditLogs = function (next) {
+function getAuditLogs(next) {
   db.query("SELECT * FROM auditlog ORDER BY time DESC", function (err, rows) {
     if (err) return next(err);
     next(null, rows);
   });
+}
+
+module.exports = {
+  getFoodByName,
+  insertFood,
+  searchFoods,
+  getAllFoodsForUser,
+  deleteFood,
+  getTodaysLogEntry,
+  updateQuantity,
+  insertLog,
+  getDailySummaries,
+  getDailyLog,
+  deleteLogEntry,
+  getUserByUsername,
+  insertUser,
+  getAllUsers,
+  insertAuditLog,
+  getAuditLogs,
 };

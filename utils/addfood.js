@@ -1,6 +1,6 @@
 const foods = require("./dbQueries");
 
-exports.addfood = function (userId, name, calories, qty, next) {
+function addfood(userId, name, calories, qty, next) {
   foods.getFoodByName(userId, name, calories, function (err, existingFood) {
     if (err) return next(err);
 
@@ -38,4 +38,6 @@ exports.addfood = function (userId, name, calories, qty, next) {
       });
     }
   });
-};
+}
+
+module.exports = { addfood };

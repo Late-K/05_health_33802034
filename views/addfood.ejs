@@ -1,5 +1,16 @@
 <div class="form-card">
-  <h2>Add food you have eaten today!</h1>
+  <h2>Add food you have eaten today!</h2>
+
+  <% if (errors && errors.length > 0) { %>
+  <div>
+    <ul>
+      <% errors.forEach(function(err) { %>
+      <li><%= err.msg %></li>
+      <% }) %>
+    </ul>
+  </div>
+  <% } %>
+
   <form method="post" action="/foods/foodadded">
     <div class="form-group">
       <label for="name">Name:</label>
@@ -12,7 +23,7 @@
         id="calories"
         type="number"
         min="0"
-        max="999"
+        max="99999"
         name="calories"
         required
       />
@@ -26,7 +37,7 @@
         value="1"
         min="0.1"
         max="999"
-        step="0.1"
+        step="0.01"
         name="quantity"
         required
       />

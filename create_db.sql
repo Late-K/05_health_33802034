@@ -14,12 +14,15 @@ CREATE TABLE IF NOT EXISTS users (
     email           VARCHAR(255) NOT NULL,
     password_hash  VARCHAR(255) NOT NULL,   
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
+    current_streak INT DEFAULT 0,
+    longest_streak INT DEFAULT 0,
+    last_goal_date DATE,
     PRIMARY KEY(id));
 
 CREATE TABLE IF NOT EXISTS foods (
     id     INT AUTO_INCREMENT,
     user_id INT NOT NULL,
-    name   VARCHAR(225) NOT NULL,
+    name   VARCHAR(255) NOT NULL,
     calories INT NOT NULL,
     PRIMARY KEY(id),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE);
@@ -47,20 +50,18 @@ CREATE TABLE IF NOT EXISTS fave_foods (
 
 CREATE TABLE IF NOT EXISTS auditlog (
     id          INT AUTO_INCREMENT,
-    username    VARCHAR(50),
+    username VARCHAR(50),
+    email    VARCHAR(255),
     status      VARCHAR(50),
     time        DATETIME DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY(id));
 
 CREATE TABLE IF NOT EXISTS daily_goals (
-    id INT AUTO_INCREMENT,
-    user_id INT NOT NULL,
+    user_id INT PRIMARY KEY,
     calorie_goal INT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY(id),
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
-
 
 # Create the application user
 CREATE USER IF NOT EXISTS 'health_app'@'localhost' IDENTIFIED BY 'qwertyuiop'; 

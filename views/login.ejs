@@ -1,5 +1,14 @@
 <div class="form-card">
   <h2>Login</h2>
+  <% if (errors && errors.length > 0) { %>
+  <div>
+    <ul>
+      <% errors.forEach(function(err) { %>
+      <li><%= err.msg %></li>
+      <% }) %>
+    </ul>
+  </div>
+  <% } %>
   <form method="POST" action="/users/loggedin">
     <div class="form-group">
       <label for="username">Username:</label>
