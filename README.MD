@@ -1,15 +1,36 @@
-# Berties Books
+# Food Brain
 
 Code for Dynamic Web Applications module.
 
+A lightweight web application for tracking food intake and calories, built with Node.js, Express and MySQL. The app integrates with the FatSecret API for searching food nutritional information and supports user registration, authentication, personal food lists and daily logs.
+
+## Features
+
+- User registration and authentication
+- Create, view and delete your own food items
+- Log daily food intake automatically and view daily summaries
+- Integrates with the FatSecret API to search public food information
+- Admin-style audit logs for login attempts and user lists
+
 ## Technologies Used
 
-- HTML
-- CSS
 - Node.js
-- Express
-- EJS
-- MySQL
+- Express.js
+- EJS templating
+- MySQL (mysql2)
+- HTML + CSS
+- dotenv for environment variables
+
+## Project Structure
+
+- `index.js` - Application entry point, express setup and route registration
+- `create_db.sql` - Schema for creating database, tables and app database user
+- `insert_test_data.sql` - Test data to populate the database
+- `routes/` - All route handlers (main, users, foods)
+- `middleware/redirectlogin.js` - Middleware to protect routes behind login
+- `utils/` - Helper functions and DB queries (`dbQueries.js`, `addfood.js`, `api.js`)
+- `views/` - EJS templates for UI (includes partials)
+- `public/` - Static assets (CSS)
 
 ## Getting Started
 
@@ -24,18 +45,42 @@ Make sure you have the following installed:
 ### Clone the repository
 
 ```bash
-git clone https://github.com/Late-K/berties-books.git
-cd berties-books
+git clone https://github.com/Late-K/05_health_33802034.git
+cd 05_health_33802034
 ```
 
 ## Setting up the database
 
 In your MySql database:
 
-```bash
+```sql
 source create_db.sql
 source insert_test_data.sql
 ```
+
+## Setting up environment variables
+
+Create a .env file in your project root directiory to store private values:
+
+```ini
+HEALTH_HOST=localhost
+HEALTH_USER=health_app
+HEALTH_PASSWORD=qwertyuiop
+HEALTH_DATABASE=health
+PORT=8000
+SESSION_SECRET='somerandomstuff'
+HEALTH_BASE_PATH=http://localhost:8000
+API_CLIENT_ID=your-fatsecret-client-id
+API_CLIENT_SECRET=your-fatsecret-client-secret
+```
+
+## Setting up fatsecret API
+
+First navigate to: https://platform.fatsecret.com
+
+Here you can create a free account, and then navigate to API KEYS to generate your keys.
+
+Finally, you have to whitlist your server IP address to allow communication.
 
 ## Starting the server up
 
@@ -56,158 +101,3 @@ This is accessable locally on http://localhost:8000/
 ## Shutting Down the Server
 
 Press CTRL + C in the terminal to stop the server.
-
-## Dotenv
-
-To protect sensitive database credentials I implemented dotenv.
-
-### Setup
-
-First install dotenv: (skip if already installed dependencies)
-
-```bash
-npm install dotenv
-```
-
-Then create a .env file in your project root directiory to store private values:
-
-```ini
-BB_USER='berties_books_app'
-BB_PASSWORD='qwertyuiop'
-BB_DATABASE='berties_books'
-```
-
-These values can now be used in your database connection pool:
-
-```js
-require("dotenv").config();
-
-const db = mysql.createPool({
-  user: process.env.BB_USER,
-  password: process.env.BB_PASSWORD,
-  database: process.env.BB_DATABASE,
-});
-```
-
-## Audit
-
-Audits improve security by recording successful and failed login attempts.
-
-### How it works
-
-In order to log these audits, we create a new database table:
-
-```sql
-CREATE TABLE auditlog (id INT AUTO_INCREMENT,
-    username VARCHAR(100),
-    status VARCHAR(20),
-    time DATETIME DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY(id));
-```
-
-Every time a user attempts to log in (whether successful or not), an entry is added to the audit log:
-
-```js
-function logAudit(username, status) {
-  // saving audit logs in database
-  let sql = "INSERT INTO auditlog (username, status) VALUES (?, ?)";
-  // execute sql query
-  db.query(sql, [username, status], (err, result) => {
-    if (err) {
-      next(err);
-    }
-  });
-}
-
-//example usage: logAudit(req.body.username, "unknown username");
-```
-
-We can then fetch these from the database and display it on our /users/audit route
-
-```js
-router.get("/audit", function (req, res, next) {
-  let sqlquery = "SELECT * FROM auditlog ORDER BY time DESC"; //get all audit logs (list by time added)
-  // execute sql query
-  db.query(sqlquery, (err, result) => {
-    if (err) {
-      next(err);
-    }
-    res.render("audit.ejs", { availableAudit: result });
-  });
-});
-```
-
-This allows admins to see all login attempts.
-
-## Restricted Access
-
-Most pages in this application are restricted behind user authentication, with only the about page, login page, and registration page being accessable without logging in.
-
-This is enforced with redirectLogin() middleware that checks whether the user has an active session, if not they are automatically redirected to the login page.
-
-This ensures that sensitive data, such as lists of users, cannot be accessed anonymously without permission.
-
-## Validation
-
-I have added validation logic using the express-validator library to the registration and addbook pages, which are all pages aside from login and search books (which due to audit or search function cant have validation) that require a user input. This helps prevent db crashes, and ensures application and user security by validating names and passwords.
-
-## Sanatisation
-
-I have wrapped many fields with req.sanatize from the express-sanatizer libary to protect them from XSS attacks. XSS happens when malicious users insert JS into fields that are then displayed on html pages.
-
-These fields include:
-
-- usernames
-- first names
-- last names
-- emails
-- book names
-- search inputs
-
-Passwords and price values arent wrapped since they should either never be rendered in html, or cant contain scripts due to their input type.
-
-## API
-
-Bertie's Books provides a JSON API for third-party developers to retrieve books in machine-readable format.
-
-#### Basic Usage
-
-```
-http://localhost:8000/api/books
-```
-
-Returns all books in the database.
-
-#### Other options
-
-Search for books containing "world":
-
-```
-http://localhost:8000/api/books?search=world
-```
-
-Find books priced between £5 and £10:
-
-```
-http://localhost:8000/api/books?minprice=5&maxprice=10
-```
-
-Sort books by name:
-
-```
-http://localhost:8000/api/books?sort=name
-```
-
-Sort books by price:
-
-```
-http://localhost:8000/api/books?sort=price
-```
-
-Combine multiple filters (e.g., search for "the" and only show books under £15, sorted by price):
-
-```
-http://localhost:8000/api/books?search=the&maxprice=15&sort=price
-```
-
-If no books match the filters, an empty array is returned.
