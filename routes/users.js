@@ -6,6 +6,7 @@ const saltRounds = 10;
 const redirectLogin = require("../middleware/redirectlogin");
 const { check, validationResult, checkSchema } = require("express-validator");
 const dbQueries = require("../utils/dbQueries");
+require("dotenv").config();
 
 const registerValidation = checkSchema({
   email: {
@@ -99,12 +100,7 @@ router.post("/registered", registerValidation, function (req, res, next) {
           (err, newId) => {
             if (err) return next(err);
 
-            res.send(
-              `Hello ${req.body.first} ${req.body.last}, you are now registered! 
-          We will send an email to you at ${req.body.email}.<br>
-          Your password is: ${req.body.password}<br>
-          Hashed password: ${req.body.passwordHash}`
-            );
+            res.render("regSuccess.ejs");
           }
         );
       }
@@ -156,7 +152,7 @@ router.post("/loggedin", function (req, res, next) {
           // Save user session here, when login is successful
           req.session.userId = user.id;
           req.session.username = user.username;
-          res.redirect("/");
+          res.redirect(process.env.HEALTH_BASE_PATH + "/");
         }
       }
     );
