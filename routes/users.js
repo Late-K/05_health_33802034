@@ -4,134 +4,159 @@ const router = express.Router();
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
 const redirectLogin = require("../middleware/redirectlogin");
-const { check, validationResult } = require("express-validator");
+const { check, validationResult, checkSchema } = require("express-validator");
+const dbQueries = require("../utils/dbQueries");
 
-router.get("/register", function (req, res, next) {
-  res.render("register.ejs");
+const registerValidation = checkSchema({
+  email: {
+    isEmail: { errorMessage: "Invalid email" },
+    isLength: {
+      options: { max: 225 },
+      errorMessage: "Email max length 225",
+    },
+    trim: true,
+    normalizeEmail: true,
+  },
+
+  username: {
+    notEmpty: { errorMessage: "Username is required" },
+    isLength: {
+      options: { min: 5, max: 50 },
+      errorMessage: "Username must be 5–50 characters",
+    },
+    trim: true,
+  },
+
+  first: {
+    isLength: {
+      options: { max: 100 },
+      errorMessage: "First name max 100 characters",
+    },
+    trim: true,
+    escape: true,
+  },
+
+  last: {
+    isLength: {
+      options: { max: 100 },
+      errorMessage: "Last name max 100 characters",
+    },
+    trim: true,
+    escape: true,
+  },
+
+  password: {
+    notEmpty: { errorMessage: "Password is required" },
+    isLength: {
+      options: { min: 8, max: 225 },
+      errorMessage: "Password must be 8–225 characters",
+    },
+    matches: {
+      options: /\d/,
+      errorMessage: "Password must contain a number",
+    },
+    custom: {
+      options: (value) => /[A-Z]/.test(value),
+      errorMessage: "Password must contain an uppercase letter",
+    },
+  },
 });
 
-router.post(
-  "/registered",
-  [
-    check("email").isEmail().notEmpty().normalizeEmail().isLength({ max: 225 }),
-    check("username").isLength({ min: 5, max: 50 }),
-    check("first").notEmpty().isAlpha().isLength({ max: 100 }),
-    check("last").notEmpty().isAlpha().isLength({ max: 100 }),
-    check("password")
-      .isLength({ min: 8, max: 225 })
-      .matches(/\d/)
-      .matches(/[A-Z]/),
-  ],
-  function (req, res, next) {
-    //sanatise inputs
-    req.body.username = req.sanitize(req.body.username);
-    req.body.first = req.sanitize(req.body.first);
-    req.body.last = req.sanitize(req.body.last);
-    req.body.email = req.sanitize(req.body.email);
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      res.render("./register");
-    } else {
-      const plainPassword = req.body.password;
-      bcrypt.hash(plainPassword, saltRounds, function (err, hashedPassword) {
-        // Store hashed password in your database.
-        let sqlquery =
-          "INSERT INTO users (username, first_name, last_name, email, hashedPassword) VALUES (?,?,?,?,?)";
-        // execute sql query
-        let newrecord = [
+router.get("/register", function (req, res, next) {
+  res.render("register.ejs", { errors: [] });
+});
+
+router.post("/registered", registerValidation, function (req, res, next) {
+  //sanatise inputs
+  req.body.username = req.sanitize(req.body.username);
+  req.body.first = req.sanitize(req.body.first);
+  req.body.last = req.sanitize(req.body.last);
+  req.body.email = req.sanitize(req.body.email);
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.render("register.ejs", { errors: errors.array() });
+  } else {
+    // Check if username already exists
+    dbQueries.getUserByUsername(
+      req.body.username,
+      async (err, existingUser) => {
+        if (err) return next(err);
+
+        if (existingUser) {
+          return res.render("register.ejs", {
+            errors: [{ msg: "Username already exists" }],
+          });
+        }
+
+        const passwordHash = await bcrypt.hash(req.body.password, saltRounds);
+
+        dbQueries.insertUser(
           req.body.username,
           req.body.first,
           req.body.last,
           req.body.email,
-          hashedPassword,
-        ];
-        db.query(sqlquery, newrecord, (err, result) => {
-          if (err) {
-            if (err.code == "ER_DUP_ENTRY") {
-              // duplicate username
-              return res.send("Registration failed: Username already exists.");
-            }
-            next(err);
-          } else
+          passwordHash,
+          (err, newId) => {
+            if (err) return next(err);
+
             res.send(
-              "Hello " +
-                req.body.first +
-                " " +
-                req.body.last +
-                ", you are now registered! We will send an email to you at " +
-                req.body.email +
-                ". Your password is: " +
-                req.body.password +
-                " and your hashed password is: " +
-                hashedPassword
+              `Hello ${req.body.first} ${req.body.last}, you are now registered! 
+          We will send an email to you at ${req.body.email}.<br>
+          Your password is: ${req.body.password}<br>
+          Hashed password: ${req.body.passwordHash}`
             );
-        });
-      });
-    }
+          }
+        );
+      }
+    );
   }
-);
+});
 
 router.get("/list", redirectLogin, function (req, res, next) {
-  let sqlquery = "SELECT * FROM users"; // get all the users
-  // execute sql query
-  db.query(sqlquery, (err, result) => {
-    if (err) {
-      next(err);
-    }
+  dbQueries.getAllUsers((err, result) => {
+    if (err) return next(err);
+
     res.render("userlist.ejs", { availableUsers: result });
   });
 });
 
 router.get("/login", function (req, res, next) {
-  res.render("login.ejs");
+  res.render("login.ejs", { error: null });
 });
 
-function logAudit(username, status) {
-  // saving audit logs in database
-  let sql = "INSERT INTO auditlog (username, status) VALUES (?, ?)";
-  // execute sql query
-  db.query(sql, [username, status], (err, result) => {
-    if (err) {
-      next(err);
-    }
-  });
-}
-
 router.post("/loggedin", function (req, res, next) {
-  //sanatise inputs
-  req.body.username = req.sanitize(req.body.username);
+  req.body.username = req.sanitize(req.body.username.trim());
 
-  let sqlquery = "SELECT * FROM users WHERE username = ?"; //get username
-  // execute sql query
-  db.query(sqlquery, [req.body.username], (err, result) => {
-    if (err) {
-      next(err);
+  dbQueries.getUserByUsername(req.body.username, (err, user) => {
+    if (err) return next(err);
+
+    if (!user) {
+      dbQueries.insertAuditLog(req.body.username, "unknown username", next);
+      return res.render("login.ejs", { error: "Invalid username or password" });
     }
-    if (result.length == 0) {
-      //username doesnt exist in db
-      logAudit(req.body.username, "unknown username");
-      return res.send("Login failed: Unknown username.");
-    }
+
     bcrypt.compare(
       req.body.password,
-      result[0].hashedPassword,
+      user.password_hash,
       function (err, match) {
         if (err) {
-          next(err);
-        } else if (match == true) {
-          logAudit(req.body.username, "logged in");
-          // Save user session here, when login is successful
-          req.session.userId = req.body.username;
-          res.send(
-            "Welcome back " +
-              result[0].first_name +
-              " " +
-              result[0].last_name +
-              ", you are now logged in!"
+          return next(err);
+        } else if (!match) {
+          dbQueries.insertAuditLog(
+            req.body.username,
+            "incorrect password",
+            next
           );
+          return res.render("login.ejs", {
+            error: "Invalid username or password",
+          });
         } else {
-          logAudit(req.body.username, "incorrect password");
-          res.send("Login failed: Incorrect password.");
+          dbQueries.insertAuditLog(req.body.username, "logged in", next);
+
+          // Save user session here, when login is successful
+          req.session.userId = user.id;
+          req.session.username = user.username;
+          res.redirect("/");
         }
       }
     );
@@ -139,11 +164,9 @@ router.post("/loggedin", function (req, res, next) {
 });
 
 router.get("/audit", redirectLogin, function (req, res, next) {
-  let sqlquery = "SELECT * FROM auditlog ORDER BY time DESC"; //get all audit logs (list by time added)
-  // execute sql query
-  db.query(sqlquery, (err, result) => {
+  dbQueries.getAuditLogs((err, result) => {
     if (err) {
-      next(err);
+      return next(err);
     }
     res.render("audit.ejs", { availableAudit: result });
   });

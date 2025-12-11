@@ -1,0 +1,44 @@
+<div class="intro">
+  <h1>Food Log for <%= date %></h1>
+</div>
+<% if (entries.length === 0) { %>
+<p>No foods logged for this day.</p>
+<% } else { %>
+
+<div class="table-card">
+  <table class="food-log-table">
+    <thead>
+      <tr>
+        <th>Food</th>
+        <th>Calories</th>
+        <th>Quantity</th>
+        <th>Total Calories</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% entries.forEach(item => { %>
+      <tr>
+        <td><%= item.name %></td>
+        <td><%= item.calories %></td>
+        <td><%= item.quantity %></td>
+        <td><%= item.total_calories %></td>
+        <td>
+          <form action="./<%= date %>/delete/<%= item.log_id %>" method="POST">
+            <button
+              type="submit"
+              class="delete-btn"
+              onclick="return confirm('Delete this entry?');"
+            >
+              Delete
+            </button>
+          </form>
+        </td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+  <h2>Total for Day: <%= dailyTotal %> calories</h2>
+</div>
+
+<% } %>

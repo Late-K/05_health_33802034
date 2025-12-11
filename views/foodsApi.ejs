@@ -1,0 +1,31 @@
+<div class="intro">
+  <form action="/foodslist" method="GET" class="search-form">
+    <input
+      id="search-box"
+      type="text"
+      name="search_text"
+      value="<%= searchText %>"
+      placeholder="Search for food..."
+    />
+    <button type="submit" class="btn">Search</button>
+  </form>
+  <h1>Food results:</h1>
+</div>
+
+<% if (!foods || foods.length === 0) { %>
+<p>No foods match your search.</p>
+<% } else { %>
+
+<ul class="list">
+  <% foods.forEach(food => { %>
+  <li class="food-card">
+    <div class="food-info">
+      <span class="food-name"><%= food.food_name %></span>
+      <span class="food-calories"><%= food.food_description %></span>
+      <!-- FatSecret includes calories in description (e.g., "120 calories per 100g") -->
+    </div>
+  </li>
+  <% }) %>
+</ul>
+
+<% } %>

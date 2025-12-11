@@ -1,16 +1,40 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>Search <%=shopData.shopName%></title>
-    <link rel="stylesheet" type="text/css" href="/main.css" />
-  </head>
-  <body>
-    <h1>Search <%=shopData.shopName%></h1>
-    <!-- form to search for books with input field -->
-    <form action="search_result" method="GET">
-      <p>What book do you want?</p>
-      <input id="search-box" type="text" name="search_text" />
-      <input type="submit" value="Search" />
+<div class="intro">
+  <form action="/foods/search" method="GET" class="search-form">
+    <input
+      id="search-box"
+      type="text"
+      name="search_text"
+      value="<%= searchText || '' %>"
+      placeholder="Search for food..."
+    />
+
+    <button type="submit" class="btn">Search</button>
+  </form>
+  <h1>Your foods:</h1>
+</div>
+<% if (!availableFoods || availableFoods.length === 0) { %>
+<p>No foods match your search.</p>
+<% } else { %>
+
+<ul class="list">
+  <% availableFoods.forEach(food => { %>
+  <li class="food-card">
+    <div class="food-info">
+      <span class="food-name"><%= food.name %></span>
+      <span class="food-calories"><%= food.calories %> calories</span>
+    </div>
+
+    <form action="/foods/delete/<%= food.id %>" method="POST">
+      <button
+        type="submit"
+        class="delete-btn"
+        onclick="return confirm('Delete grub? This will delete all instances of it including in your log!');"
+      >
+        Delete
+      </button>
     </form>
-  </body>
-</html>
+  </li>
+  <% }) %>
+</ul>
+
+<% } %>

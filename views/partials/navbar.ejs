@@ -1,0 +1,17 @@
+<div class="navbar">
+  <h1><a class="brand" href="<%= HEALTH_BASE_PATH %>/">Grub Brain</a></h1>
+  <nav class="nav-links">
+    <a href="<%= HEALTH_BASE_PATH %>/">Home</a>
+    <a href="<%= HEALTH_BASE_PATH %>/about">About us</a>
+    <a href="<%= HEALTH_BASE_PATH %>/foodslist">Look up food</a>
+
+    <% if (isAuthenticated) { %>
+    <a href="<%= HEALTH_BASE_PATH %>/foods/addfood">Add food</a>
+    <a href="<%= HEALTH_BASE_PATH %>/foods/logs">Daily food log</a>
+    <a href="<%= HEALTH_BASE_PATH %>/foods/search">Search food</a>
+    <a href="<%= HEALTH_BASE_PATH %>/logout">Logout</a>
+    <% } else { %>
+    <a href="<%= HEALTH_BASE_PATH %>/users/login">Start logging your food!</a>
+    <% } %>
+  </nav>
+</div>
