@@ -115,11 +115,6 @@ input:focus {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
-.daily-log-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
-}
-
 .daily-log-card a {
   display: flex;
   flex-direction: column;
@@ -195,7 +190,6 @@ p {
   color: #333;
 }
 
-/* Food Card Item */
 .food-card {
   background: #ffffffdd;
   border-radius: 12px;
