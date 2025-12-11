@@ -20,7 +20,7 @@ router.get("/about", function (req, res, next) {
 router.get("/logout", redirectLogin, (req, res) => {
   req.session.destroy((err) => {
     if (err) {
-      return res.redirect("./");
+      return res.redirect(process.env.HEALTH_BASE_PATH + "/users/logout");
     }
     res.redirect(process.env.HEALTH_BASE_PATH + "/users/login");
   });

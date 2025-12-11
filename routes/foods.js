@@ -55,12 +55,7 @@ router.post(
       function (err, result) {
         if (err) return next(err);
 
-        res.send(
-          " Grub added to database, name: " +
-            req.body.name +
-            " calories: " +
-            req.body.calories
-        );
+        res.redirect(process.env.HEALTH_BASE_PATH + "/foods/addfood");
         // res.render("foodadded_success", {
         //   name,
         //   calories,
@@ -81,7 +76,7 @@ router.post("/delete/:foodId", function (req, res, next) {
     if (err) return next(err);
 
     // Redirect back to the foods list
-    res.redirect("/foods/search");
+    res.redirect(process.env.HEALTH_BASE_PATH + "/foods/search");
   });
 });
 
@@ -125,7 +120,7 @@ router.post("/logs/:date/delete/:logId", function (req, res, next) {
     if (err) return next(err);
 
     // Redirect back to the same day's log
-    res.redirect(`/foods/logs/${date}`);
+    res.redirect(process.env.HEALTH_BASE_PATH + "/foods/logs/${date}");
   });
 });
 // Export the router object so index.js can access it
